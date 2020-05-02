@@ -1,14 +1,24 @@
-import {ApolloServer} from 'apollo-server'
+import { ApolloServer } from 'apollo-server'
 
-import {typeDefs} from './typedefs'
-import {resolvers} from './resolvers'
+import crypto from 'crypto'
+
+import { typeDefs } from './schema'
+// import { resolvers } from './resolvers'
 
 const genServer = () => {
+  console.log('generatign....')
   return new ApolloServer({
     typeDefs,
-    resolvers,
+    // resolvers,
     introspection: true,
     playground: true,
+    context: () => ({
+      id: crypto.randomBytes(10).toString('hex'),
+      auth: () => {
+
+        return 'boop' 
+      }
+    })
   })
 } 
 

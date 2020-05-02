@@ -1,7 +1,7 @@
 import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
-  type USER: {
+  type USER {
     id: String!
     username: String!
     email: String
@@ -47,9 +47,9 @@ export const typeDefs = gql`
       email: String, 
       dateCreated: String!, 
       isLoggedIn: Boolean!
-    ): USER | USER_ALREADY_EXISTS_ERR
+    ): USER # | USER_ALREADY_EXISTS_ERR
 
     # toggle returns either a USER, an Err if a USER cannot be found, or an log in error if they try to log out while already out and vice versa 
-    toggleUSERLogIn(secret: String!, TTL: Int!, id: String!): USER_RESULT | USER_LOG_IN_ERR
+    toggleUSERLogIn(secret: String!, TTL: Int!, id: String!): USER_RESULT #| USER_LOG_IN_ERR
   }
 `
