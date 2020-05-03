@@ -1,42 +1,42 @@
 import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
-  type USER {
+  type User {
     id: String!
     username: String!
-    email: String
+    email: String!
     dateCreated: String!
     isLoggedIn: Boolean!
   }
 
-  type USER_NOT_FOUND_ERR {
+  type UserNotFoundErr {
     message: String!
   }
 
-  type USER_NOT_LOGGED_IN_ERR {
+  type UserAlreadyExistsErr {
     message: String!
   }
 
-  type USER_ALREADY_EXISTS_ERR {
+  type UserLoginErr {
     message: String!
   }
 
-  type USER_LOG_IN_ERR {
-    message: String!
-  }
+  union UserResult = User | UserNotFoundErr
 
-  union USER_RESULT = USER | USER_NOT_FOUND_ERR
+  union NewUserResult = User | UserAlreadyExistsErr
 
-  type PASSCODE {
+  union LoginUserResult = User | UserLoginErr
+
+  type Passcode {
     secret: String!
     TTL: Int!
   }
 
   type Query {
-    user(id: String!): USER_RESULT
-    users: [USER_RESULT!]!
-    loggedInUsers(isLoggedIn: Boolean!): [USER_RESULT]!
-    userCanLogIn(id: String!): USER_RESULT!
+    user(id: String!): UserResult!
+    users: [User]!
+    loggedInUsers(isLoggedIn: Boolean!): [UserResult]!
+    userCanLogIn(id: String!): UserResult!
   }
 
   type Mutation {
@@ -47,9 +47,9 @@ export const typeDefs = gql`
       email: String, 
       dateCreated: String!, 
       isLoggedIn: Boolean!
-    ): USER # | USER_ALREADY_EXISTS_ERR
+    ): NewUserResult
 
     # toggle returns either a USER, an Err if a USER cannot be found, or an log in error if they try to log out while already out and vice versa 
-    toggleUSERLogIn(secret: String!, TTL: Int!, id: String!): USER_RESULT #| USER_LOG_IN_ERR
+    toggleUSERLogIn(secret: String!, TTL: Int!, id: String!): LoginUserResult!
   }
 `

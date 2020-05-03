@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": "beepboop123",
+      "username": "lenin_online",
+      "email": "j.gaddas@outlook.com",
+      "dateCreated": "2020-05-03",
+      "isLoggedIn": false
+    }
+  ]
+}
