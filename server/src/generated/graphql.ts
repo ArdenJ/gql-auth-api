@@ -13,11 +13,11 @@ export type Scalars = {
 
 export type User = {
    __typename?: 'User';
-  id: Scalars['String'];
-  username: Scalars['String'];
-  email: Scalars['String'];
-  dateCreated: Scalars['String'];
-  isLoggedIn: Scalars['Boolean'];
+  id?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  dateCreated?: Maybe<Scalars['String']>;
+  isLoggedIn?: Maybe<Scalars['Boolean']>;
 };
 
 export type UserNotFoundErr = {
@@ -208,11 +208,11 @@ export type ResolversParentTypes = {
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  dateCreated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  isLoggedIn?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  dateCreated?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  isLoggedIn?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 

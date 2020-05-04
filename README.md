@@ -4,9 +4,9 @@
 - things
 
 ## Wanna Use
-- 🚀  Apollo Server latest version 
+- 🚀  Apollo Server ✅
 - 🚀  Apollo Client v3 
-- 🤤  Codegen 
+- 🤤  Codegen ✅
 - ✅  Postgres 
-- 🐳  Docker 
+- 🐳  Docker / 🥗 Redis
 - ❌  XState

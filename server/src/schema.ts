@@ -2,11 +2,11 @@ import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
   type User {
-    id: String!
-    username: String!
-    email: String!
-    dateCreated: String!
-    isLoggedIn: Boolean!
+    id: String
+    username: String
+    email: String
+    dateCreated: String
+    isLoggedIn: Boolean
   }
 
   type UserNotFoundErr {

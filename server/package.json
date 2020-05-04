@@ -4,7 +4,7 @@
   "description": "things",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "concurrently \"npm run jsonserver\" \"nodemon\"",
+    "dev": "concurrently \"npm run jsonserver\" \"nodemon\" \"npm run generate\"",
     "generate": "graphql-codegen --config codegen.yml",
     "lint": "eslint --fix --ext .ts --fix",
     "jsonserver": "json-server --watch src/db/data.json --port 5555",

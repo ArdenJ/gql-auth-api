@@ -9,7 +9,7 @@ const genServer = () => {
   console.log('generatign....')
   return new ApolloServer({
     typeDefs,
-    // resolvers,
+    resolvers,
     introspection: true,
     playground: true,
     context: () => ({
