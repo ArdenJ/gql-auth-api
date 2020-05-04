@@ -6,6 +6,13 @@
       "email": "j.gaddas@outlook.com",
       "dateCreated": "2020-05-03",
       "isLoggedIn": false
+    },
+    {
+      "id": "no",
+      "username": "nope",
+      "email": "dontlook@me.com",
+      "dateCreated": "2020-05-03",
+      "isLoggedIn": true
     }
   ]
 }

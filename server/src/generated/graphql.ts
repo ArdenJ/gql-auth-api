@@ -8,6 +8,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -35,7 +36,14 @@ export type UserLoginErr = {
   message: Scalars['String'];
 };
 
+export type ActionYieldsNoResult = {
+   __typename?: 'ActionYieldsNoResult';
+  message?: Maybe<Scalars['String']>;
+};
+
 export type UserResult = User | UserNotFoundErr;
+
+export type AllUsersResult = User | ActionYieldsNoResult;
 
 export type NewUserResult = User | UserAlreadyExistsErr;
 
@@ -50,8 +58,8 @@ export type Passcode = {
 export type Query = {
    __typename?: 'Query';
   user: UserResult;
-  users: Array<Maybe<User>>;
-  loggedInUsers: Array<Maybe<UserResult>>;
+  users: Array<Maybe<AllUsersResult>>;
+  usersWithStatus: Array<Maybe<AllUsersResult>>;
   userCanLogIn: UserResult;
 };
 
@@ -61,7 +69,7 @@ export type QueryUserArgs = {
 };
 
 
-export type QueryLoggedInUsersArgs = {
+export type QueryUsersWithStatusArgs = {
   isLoggedIn: Scalars['Boolean'];
 };
 
@@ -177,7 +185,9 @@ export type ResolversTypes = {
   UserNotFoundErr: ResolverTypeWrapper<UserNotFoundErr>,
   UserAlreadyExistsErr: ResolverTypeWrapper<UserAlreadyExistsErr>,
   UserLoginErr: ResolverTypeWrapper<UserLoginErr>,
+  ActionYieldsNoResult: ResolverTypeWrapper<ActionYieldsNoResult>,
   UserResult: ResolversTypes['User'] | ResolversTypes['UserNotFoundErr'],
+  AllUsersResult: ResolversTypes['User'] | ResolversTypes['ActionYieldsNoResult'],
   NewUserResult: ResolversTypes['User'] | ResolversTypes['UserAlreadyExistsErr'],
   LoginUserResult: ResolversTypes['User'] | ResolversTypes['UserLoginErr'],
   Passcode: ResolverTypeWrapper<Passcode>,
@@ -196,7 +206,9 @@ export type ResolversParentTypes = {
   UserNotFoundErr: UserNotFoundErr,
   UserAlreadyExistsErr: UserAlreadyExistsErr,
   UserLoginErr: UserLoginErr,
+  ActionYieldsNoResult: ActionYieldsNoResult,
   UserResult: ResolversParentTypes['User'] | ResolversParentTypes['UserNotFoundErr'],
+  AllUsersResult: ResolversParentTypes['User'] | ResolversParentTypes['ActionYieldsNoResult'],
   NewUserResult: ResolversParentTypes['User'] | ResolversParentTypes['UserAlreadyExistsErr'],
   LoginUserResult: ResolversParentTypes['User'] | ResolversParentTypes['UserLoginErr'],
   Passcode: Passcode,
@@ -231,8 +243,17 @@ export type UserLoginErrResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
+export type ActionYieldsNoResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionYieldsNoResult'] = ResolversParentTypes['ActionYieldsNoResult']> = {
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
 export type UserResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserResult'] = ResolversParentTypes['UserResult']> = {
   __resolveType: TypeResolveFn<'User' | 'UserNotFoundErr', ParentType, ContextType>
+};
+
+export type AllUsersResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['AllUsersResult'] = ResolversParentTypes['AllUsersResult']> = {
+  __resolveType: TypeResolveFn<'User' | 'ActionYieldsNoResult', ParentType, ContextType>
 };
 
 export type NewUserResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewUserResult'] = ResolversParentTypes['NewUserResult']> = {
@@ -251,8 +272,8 @@ export type PasscodeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   user?: Resolver<ResolversTypes['UserResult'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>,
-  users?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType>,
-  loggedInUsers?: Resolver<Array<Maybe<ResolversTypes['UserResult']>>, ParentType, ContextType, RequireFields<QueryLoggedInUsersArgs, 'isLoggedIn'>>,
+  users?: Resolver<Array<Maybe<ResolversTypes['AllUsersResult']>>, ParentType, ContextType>,
+  usersWithStatus?: Resolver<Array<Maybe<ResolversTypes['AllUsersResult']>>, ParentType, ContextType, RequireFields<QueryUsersWithStatusArgs, 'isLoggedIn'>>,
   userCanLogIn?: Resolver<ResolversTypes['UserResult'], ParentType, ContextType, RequireFields<QueryUserCanLogInArgs, 'id'>>,
 };
 
@@ -270,7 +291,9 @@ export type Resolvers<ContextType = any> = {
   UserNotFoundErr?: UserNotFoundErrResolvers<ContextType>,
   UserAlreadyExistsErr?: UserAlreadyExistsErrResolvers<ContextType>,
   UserLoginErr?: UserLoginErrResolvers<ContextType>,
+  ActionYieldsNoResult?: ActionYieldsNoResultResolvers<ContextType>,
   UserResult?: UserResultResolvers,
+  AllUsersResult?: AllUsersResultResolvers,
   NewUserResult?: NewUserResultResolvers,
   LoginUserResult?: LoginUserResultResolvers,
   Passcode?: PasscodeResolvers<ContextType>,

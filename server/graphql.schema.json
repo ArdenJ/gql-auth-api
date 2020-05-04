@@ -182,6 +182,29 @@
         "possibleTypes": null
       },
       {
+        "kind": "OBJECT",
+        "name": "ActionYieldsNoResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
         "kind": "UNION",
         "name": "UserResult",
         "description": null,
@@ -198,6 +221,27 @@
           {
             "kind": "OBJECT",
             "name": "UserNotFoundErr",
+            "ofType": null
+          }
+        ]
+      },
+      {
+        "kind": "UNION",
+        "name": "AllUsersResult",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": [
+          {
+            "kind": "OBJECT",
+            "name": "User",
+            "ofType": null
+          },
+          {
+            "kind": "OBJECT",
+            "name": "ActionYieldsNoResult",
             "ofType": null
           }
         ]
@@ -344,8 +388,8 @@
                 "kind": "LIST",
                 "name": null,
                 "ofType": {
-                  "kind": "OBJECT",
-                  "name": "User",
+                  "kind": "UNION",
+                  "name": "AllUsersResult",
                   "ofType": null
                 }
               }
@@ -354,7 +398,7 @@
             "deprecationReason": null
           },
           {
-            "name": "loggedInUsers",
+            "name": "usersWithStatus",
             "description": null,
             "args": [
               {
@@ -380,7 +424,7 @@
                 "name": null,
                 "ofType": {
                   "kind": "UNION",
-                  "name": "UserResult",
+                  "name": "AllUsersResult",
                   "ofType": null
                 }
               }
@@ -600,7 +644,7 @@
       {
         "kind": "SCALAR",
         "name": "Upload",
-        "description": null,
+        "description": "The `Upload` scalar type represents a file upload.",
         "fields": null,
         "inputFields": null,
         "interfaces": null,
