@@ -8,7 +8,8 @@ import {
   AllUsersResult,
   ActionYieldsNoResult,
   NewUserResult,
-  LoginUserResult
+  LoginUserResult,
+  AltAllUsersResult
 } from './generated/graphql'
 
 const UNHANDLED_ACTION = ({err}: any) => new ApolloError(`APOLLO ERR -- UNHANDLED ACTION: ${err}`)
@@ -35,8 +36,8 @@ export const resolvers = {
         return UNHANDLED_ACTION(err)
       }
     }, 
-    // TODO: Users and Logged in users would be better handled by returning an actual response fragment to the front end 
-    users: async (root, args, { db }, info): Promise<User | ActionYieldsNoResult> => {
+
+    users: async (root, args, { db }, info): Promise<AllUsersResult> => {
 
       const message = { message: 'There are currently no registered users' }
       
@@ -44,21 +45,48 @@ export const resolvers = {
         const res = await fetch(db)
         const users = await res.json()
         console.log(users)
-        if (await users) {
+        if (await users.length !== 0) {
           return {
-            __typename: 'User',
-            ...users,
+            status: true,
+            success: [...users],
           }
         }
         return {
-          __typename: 'ActionYieldsNoResult',
-          ...message
+          status: false,
+          failure: message
         }
       } catch (err) {
-          return UNHANDLED_ACTION(err)
+          throw UNHANDLED_ACTION(err)      
       }
     },
-    usersWithStatus: async (root, { isLoggedIn }, { db }, info): Promise<User[] | ActionYieldsNoResult> => {
+
+    altusers: async (root, args, { db }, info): Promise<AltAllUsersResult> => {
+
+      const message = { message: 'There are currently no registered users' }
+
+      try {
+        const res = await fetch(db)
+        const users = await res.json()
+        console.log(users)
+        if (await users.length !== 0) {
+          return {
+            __typename: "AllUsersSuccess",
+            status: true,
+            result: [...users],
+          }
+        }
+        return {
+          __typename: "AllUsersFailure",
+          status: false,
+          result: message.message
+        }
+      } catch (err) {
+          throw UNHANDLED_ACTION(err)      
+      }
+
+    },
+
+    usersWithStatus: async (root, { isLoggedIn }, { db }, info): Promise<AllUsersResult> => {
 
       const message = { message: `There are currently no registered users matching status ${isLoggedIn}` }
 
@@ -67,20 +95,19 @@ export const resolvers = {
         const users = await res.json()
         if (await users) {
           const matching = users.filter(user => user.isLoggedIn === isLoggedIn)
-          console.log(matching === true)
           if (matching) {
             return {
-              __typename: 'User',
-              ...matching,
+              status: true,
+              success: [...matching],
             }
           }
-        }
-        return {
-          __typename: 'ActionYieldsNoResult',
-          ...message
+          return {
+            status: false,
+            failure: message
+          }
         }
       } catch (err) {
-          return UNHANDLED_ACTION(err)
+          throw UNHANDLED_ACTION(err)
       }
     },
     userCanLogIn: async (root, { id }, { db }, info): Promise<UserResult> => {
@@ -88,11 +115,6 @@ export const resolvers = {
         const res = await fetch(db)
         const users = await res.json()
         const user = await users.find(i => i.id === id)
-
-        let reason = ''
-        if (!user) {
-          reason = `A user with ID ${id} does not exist`
-        }
  
         if (await user && !user.isLoggedIn) {
           return {
@@ -114,7 +136,47 @@ export const resolvers = {
     }, 
   },
 
+  // MUTATIONS
+  // createNewUser: async (root, {username, email}, { db, id }, info):Promise<NewUserResult> => {
+    // let NEW_USER = {
+    //   id: id,
+    //   username: username,
+    //   email: email || null,
+    //   dateCreateAt: Date.now().toString(),
+    //   isLoggedIn: false
+    // }
+
+    // const res = await fetch(db).then(res => res.json()).then(data => data)
+
+    // const usernameTaken = res.filter(i => i.username !== username)
+    // const emailTaken = res.filter(i => i.email !== email)
+
+    // if  (usernameTaken) return {message: `Aun account with the sername ${username} already exists`} 
+    // if  (emailTaken) return {message: `An account with the email ${email} already exists`} 
+
+    // const user:Promise<User> = Promise.resolve(fetch(db, {
+    //   method: 'POST',
+    //   body: JSON.stringify(NEW_USER),
+    //   headers: { 'Content-Type': 'application/json' },
+    // })
+    //   .then(res => res.json())
+    //   .then(data => data)
+    //   .catch(err => console.log(err)))
+
+    // return Promise.resolve(user)
+  // },
+
   // RESOLVE UNION TYPES
+  AltAllUsersResult: {
+    __resolveType(obj) {
+      if (obj.status) {
+        return 'AllUsersSuccess'
+      }
+      if (!obj.status) {
+        return 'AllUsersFailure'
+      }
+    }
+  },
   UserResult: {
     __resolveType(obj) {
       if (obj.hasOwnProperty('id')) {
@@ -128,10 +190,8 @@ export const resolvers = {
   },
   AllUsersResult: {
     __resolveType(obj) {
-      if (obj.length > 0) {
-        if (obj.id) {
-          return 'User'
-        }
+      if (obj[0].hasOwnProperty('id')) {
+        return 'User'
       }
       if (obj.message) {
         return 'ActionYieldsNoResult'

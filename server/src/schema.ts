@@ -1,3 +1,4 @@
+import { NewUserResult, UserAlreadyExistsErr, LoginUserResult, UserLoginErr, AllUsersResult, AltAllUsersResult } from './generated/graphql';
 import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
@@ -34,11 +35,40 @@ export const typeDefs = gql`
   # Searching for all users or logged in users returns 
   # a no results type Because it is reasonable that 
   # there are no results matching the query
-  union AllUsersResult = User | ActionYieldsNoResult
+  type AllUsersResult { 
+    status: Boolean!
+    success: [User] 
+    failure: ActionYieldsNoResult
+  }
 
-  union NewUserResult = User | UserAlreadyExistsErr
+  # ALL USERS 
+  # This feels like a really long winded way of returning 
+  # either a string or an array from a query but you can't 
+  # define arrays directly on unions  
+  type AllUsersSuccess {
+    status: Boolean!
+    result: [User]
+  }
 
-  union LoginUserResult = User | UserLoginErr
+  type AllUsersFailure {
+    status: Boolean!
+    result: String
+  }
+
+  union AltAllUsersResult = AllUsersSuccess | AllUsersFailure
+# END EXPERIMENT
+
+  type NewUserResult {
+    status: Boolean!
+    success: User
+    failure: UserAlreadyExistsErr
+  }
+
+  type LoginUserResult {
+    status: Boolean!
+    success: User
+    failure: UserLoginErr
+  }
 
   type Passcode {
     secret: String!
@@ -47,8 +77,9 @@ export const typeDefs = gql`
 
   type Query {
     user(id: String!): UserResult!
-    users: [AllUsersResult]!
-    usersWithStatus(isLoggedIn: Boolean!): [AllUsersResult]!
+    users: AllUsersResult!
+    altusers: AltAllUsersResult!
+    usersWithStatus(isLoggedIn: Boolean!): AllUsersResult!
     userCanLogIn(id: String!): UserResult!
   }
 
@@ -56,11 +87,8 @@ export const typeDefs = gql`
     # create returns a USER or an error the username 
     # is not unique 
     createNewUSER(
-      id: String!, 
       username: String!, 
-      email: String, 
-      dateCreated: String!, 
-      isLoggedIn: Boolean!
+      email: String
     ): NewUserResult
 
     # toggle returns either a USER, an Err if a USER 
