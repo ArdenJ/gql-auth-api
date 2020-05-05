@@ -6,10 +6,8 @@ import {
   Resolvers,
   UserResult,
   AllUsersResult,
-  ActionYieldsNoResult,
   NewUserResult,
   LoginUserResult,
-  AltAllUsersResult
 } from './generated/graphql'
 
 const UNHANDLED_ACTION = ({err}: any) => new ApolloError(`APOLLO ERR -- UNHANDLED ACTION: ${err}`)
@@ -35,35 +33,9 @@ export const resolvers = {
       } catch (err) {
         return UNHANDLED_ACTION(err)
       }
-    }, 
-
-    users: async (root, args, { db }, info): Promise<AllUsersResult> => {
-
-      const message = { message: 'There are currently no registered users' }
-      
-      try {
-        const res = await fetch(db)
-        const users = await res.json()
-        console.log(users)
-        if (await users.length !== 0) {
-          return {
-            status: true,
-            success: [...users],
-          }
-        }
-        return {
-          status: false,
-          failure: message
-        }
-      } catch (err) {
-          throw UNHANDLED_ACTION(err)      
-      }
     },
 
-    altusers: async (root, args, { db }, info): Promise<AltAllUsersResult> => {
-
-      const message = { message: 'There are currently no registered users' }
-
+    users: async (root, args, { db }, info): Promise<AllUsersResult> => {
       try {
         const res = await fetch(db)
         const users = await res.json()
@@ -71,14 +43,12 @@ export const resolvers = {
         if (await users.length !== 0) {
           return {
             __typename: "AllUsersSuccess",
-            status: true,
             result: [...users],
           }
         }
         return {
           __typename: "AllUsersFailure",
-          status: false,
-          result: message.message
+          message: 'There are currently no registered users'
         }
       } catch (err) {
           throw UNHANDLED_ACTION(err)      
@@ -88,22 +58,20 @@ export const resolvers = {
 
     usersWithStatus: async (root, { isLoggedIn }, { db }, info): Promise<AllUsersResult> => {
 
-      const message = { message: `There are currently no registered users matching status ${isLoggedIn}` }
-
       try {
         const res = await fetch(db)
         const users = await res.json()
         if (await users) {
           const matching = users.filter(user => user.isLoggedIn === isLoggedIn)
-          if (matching) {
+          if (matching.length > 0) {
             return {
-              status: true,
-              success: [...matching],
+              __typename: 'AllUsersSuccess',
+              result: [...matching],
             }
           }
           return {
-            status: false,
-            failure: message
+            __typename: 'AllUsersFailure',
+            message: `There are currently no registered users matching status ${isLoggedIn}` 
           }
         }
       } catch (err) {
@@ -167,12 +135,12 @@ export const resolvers = {
   // },
 
   // RESOLVE UNION TYPES
-  AltAllUsersResult: {
+  AllUsersResult: {
     __resolveType(obj) {
-      if (obj.status) {
+      if (obj.result) {
         return 'AllUsersSuccess'
       }
-      if (!obj.status) {
+      if (obj.message) {
         return 'AllUsersFailure'
       }
     }
@@ -184,17 +152,6 @@ export const resolvers = {
       } 
       if (obj.hasOwnProperty('message')){
         return 'UserNotFoundErr'
-      }
-      return null
-    }
-  },
-  AllUsersResult: {
-    __resolveType(obj) {
-      if (obj[0].hasOwnProperty('id')) {
-        return 'User'
-      }
-      if (obj.message) {
-        return 'ActionYieldsNoResult'
       }
       return null
     }

@@ -1,4 +1,3 @@
-import { NewUserResult, UserAlreadyExistsErr, LoginUserResult, UserLoginErr, AllUsersResult, AltAllUsersResult } from './generated/graphql';
 import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
@@ -22,42 +21,27 @@ export const typeDefs = gql`
     message: String!
   }
 
-  type ActionYieldsNoResult {
-    # This is a generic result that can be return the client
-    # when the action is accepted but there is nothing to show
-    message: String
-  }
-
   # Searching for a user by ID must return an user 
   # Therefore, no user must be an error
   union UserResult = User | UserNotFoundErr 
-
-  # Searching for all users or logged in users returns 
-  # a no results type Because it is reasonable that 
-  # there are no results matching the query
-  type AllUsersResult { 
-    status: Boolean!
-    success: [User] 
-    failure: ActionYieldsNoResult
-  }
 
   # ALL USERS 
   # This feels like a really long winded way of returning 
   # either a string or an array from a query but you can't 
   # define arrays directly on unions  
+  # TODO: It might not be worth defining success as a field
+  # as we infer status from the __typename on the response 
   type AllUsersSuccess {
-    status: Boolean!
-    result: [User]
+    result: [User]!
   }
 
   type AllUsersFailure {
-    status: Boolean!
-    result: String
+    message: String!
   }
 
-  union AltAllUsersResult = AllUsersSuccess | AllUsersFailure
-# END EXPERIMENT
+  union AllUsersResult = AllUsersSuccess | AllUsersFailure
 
+  # MUTATION TYPE RESULTS
   type NewUserResult {
     status: Boolean!
     success: User
@@ -78,7 +62,6 @@ export const typeDefs = gql`
   type Query {
     user(id: String!): UserResult!
     users: AllUsersResult!
-    altusers: AltAllUsersResult!
     usersWithStatus(isLoggedIn: Boolean!): AllUsersResult!
     userCanLogIn(id: String!): UserResult!
   }
