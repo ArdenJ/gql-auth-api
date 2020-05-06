@@ -42,17 +42,15 @@ export const typeDefs = gql`
   union AllUsersResult = AllUsersSuccess | AllUsersFailure
 
   # MUTATION TYPE RESULTS
-  type NewUserResult {
-    status: Boolean!
-    success: User
-    failure: UserAlreadyExistsErr
+  # TODO: Mutations should return a confirmation type that includes the user?
+  union NewUserResult = User | UserAlreadyExistsErr 
+
+  type ErrorOnUserLogin {
+    UserLoginErr: UserLoginErr
+    UserNotFoundErr: UserNotFoundErr
   }
 
-  type LoginUserResult {
-    status: Boolean!
-    success: User
-    failure: UserLoginErr
-  }
+  union LoginUserResult = User | ErrorOnUserLogin
 
   type Passcode {
     secret: String!
@@ -69,14 +67,11 @@ export const typeDefs = gql`
   type Mutation {
     # create returns a USER or an error the username 
     # is not unique 
-    createNewUSER(
-      username: String!, 
-      email: String
-    ): NewUserResult
+    createNewUser(username: String!, email: String): NewUserResult!
 
     # toggle returns either a USER, an Err if a USER 
     # cannot be found, or an log in error if they try 
     # to log out while already out and vice versa 
-    toggleUSERLogIn(secret: String!, TTL: Int!, id: String!): LoginUserResult!
+    toggleUserLogIn(id: String! isLoggedIn: Boolean!): LoginUserResult!
   }
 `

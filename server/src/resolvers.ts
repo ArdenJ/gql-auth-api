@@ -104,35 +104,76 @@ export const resolvers = {
     }, 
   },
 
+  Mutation: {
   // MUTATIONS
-  // createNewUser: async (root, {username, email}, { db, id }, info):Promise<NewUserResult> => {
-    // let NEW_USER = {
-    //   id: id,
-    //   username: username,
-    //   email: email || null,
-    //   dateCreateAt: Date.now().toString(),
-    //   isLoggedIn: false
-    // }
+  createNewUser: async (root, {username, email}, { db, id }, info):Promise<NewUserResult> => {
+    const NEW_USER = {
+      id: id,
+      username: username,
+      email: email,
+      dateCreated: Date.now(),
+      isLoggedIn: (false)
+    }
+    try {
+      const test = await fetch(db)
+      const response = await test.json() 
+      if (await response.filter(i => i.username === NEW_USER.username).length !== 0) return {
+        __typename: 'UserAlreadyExistsErr',
+        message: `A user w/ username ${NEW_USER.username} already exists` 
+      }
 
-    // const res = await fetch(db).then(res => res.json()).then(data => data)
-
-    // const usernameTaken = res.filter(i => i.username !== username)
-    // const emailTaken = res.filter(i => i.email !== email)
-
-    // if  (usernameTaken) return {message: `Aun account with the sername ${username} already exists`} 
-    // if  (emailTaken) return {message: `An account with the email ${email} already exists`} 
-
-    // const user:Promise<User> = Promise.resolve(fetch(db, {
-    //   method: 'POST',
-    //   body: JSON.stringify(NEW_USER),
-    //   headers: { 'Content-Type': 'application/json' },
-    // })
-    //   .then(res => res.json())
-    //   .then(data => data)
-    //   .catch(err => console.log(err)))
-
-    // return Promise.resolve(user)
-  // },
+      const newUser =  await fetch(db, {
+        method: 'POST', 
+        body: JSON.stringify(NEW_USER), 
+        headers: {'Content-Type': 'application/json'
+      }})
+      const res = await newUser.json()
+      return {
+        __typename: 'User',
+        ...res
+      }
+    } catch (err) {
+      throw UNHANDLED_ACTION(err)
+    }
+  },
+  toggleUserLogIn: async (root, {id, isLoggedIn}, { db }, info):Promise<LoginUserResult> => {
+    try {
+      const test = await fetch(db)
+      const response = await test.json() 
+      const findUser = await response.filter(i => i.id === id)
+      if (await findUser.length === 0) return {
+        __typename: 'ErrorOnUserLogin',
+        UserNotFoundErr: {
+          __typename: 'UserNotFoundErr',
+          message: `A user w/ id ${id} doesn't exists` 
+        }
+      } 
+      else if (await findUser[0].isLoggedIn === isLoggedIn) return {
+        __typename: 'ErrorOnUserLogin',
+        UserLoginErr: {
+          __typename: 'UserLoginErr',
+          message: `The user w/ id ${id} could not be set to ${isLoggedIn} because their status is already ${isLoggedIn}}` 
+        }
+      }
+      const updateUser = {
+        ...findUser[0],
+        isLoggedIn: isLoggedIn
+      }
+      const toggledUser =  await fetch(`${db}/${id}`, {
+        method: 'PATCH', 
+        body: JSON.stringify(updateUser), 
+        headers: {'Content-Type': 'application/json'
+      }})
+      const res = await toggledUser.json()
+      return {
+        __typename: 'User',
+        ...res
+      }
+    } catch (err) {
+      throw UNHANDLED_ACTION(err)
+    }
+  },
+},
 
   // RESOLVE UNION TYPES
   AllUsersResult: {
@@ -171,8 +212,11 @@ export const resolvers = {
       if(obj.hasOwnProperty('id')) {
         return 'User'
       }
-      if(obj.hasOwnProperty('message')) {
-        return 'LoginUserErr'
+      if(obj.UserLoginErr) {
+        return 'ErrorOnUserLogin'
+      }
+      if(obj.UserNotFoundErr) {
+        return 'ErrorOnUserLogin'
       }
     }
   }

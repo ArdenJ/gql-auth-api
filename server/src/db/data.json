@@ -5,13 +5,34 @@
       "username": "lenin_online",
       "email": "j.gaddas@outlook.com",
       "dateCreated": "2020-05-03",
-      "isLoggedIn": false
+      "isLoggedIn": true
     },
     {
       "id": "no",
       "username": "nope",
       "email": "dontlook@me.com",
       "dateCreated": "2020-05-03",
+      "isLoggedIn": false
+    },
+    {
+      "id": "9fe9e001c9a1c72445a0",
+      "username": "dowork",
+      "email": "nope",
+      "dateCreated": 1588748283649,
+      "isLoggedIn": false
+    },
+    {
+      "id": "887db1cbb2b214a0b81d",
+      "username": "dowork1",
+      "email": "nope",
+      "dateCreated": 1588748406734,
+      "isLoggedIn": false
+    },
+    {
+      "id": "66a40ba75110de0996dc",
+      "username": "dowork12",
+      "email": "nope",
+      "dateCreated": 1588748858749,
       "isLoggedIn": false
     }
   ]

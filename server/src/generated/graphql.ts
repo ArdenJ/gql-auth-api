@@ -49,19 +49,15 @@ export type AllUsersFailure = {
 
 export type AllUsersResult = AllUsersSuccess | AllUsersFailure;
 
-export type NewUserResult = {
-   __typename?: 'NewUserResult';
-  status: Scalars['Boolean'];
-  success?: Maybe<User>;
-  failure?: Maybe<UserAlreadyExistsErr>;
+export type NewUserResult = User | UserAlreadyExistsErr;
+
+export type ErrorOnUserLogin = {
+   __typename?: 'ErrorOnUserLogin';
+  UserLoginErr?: Maybe<UserLoginErr>;
+  UserNotFoundErr?: Maybe<UserNotFoundErr>;
 };
 
-export type LoginUserResult = {
-   __typename?: 'LoginUserResult';
-  status: Scalars['Boolean'];
-  success?: Maybe<User>;
-  failure?: Maybe<UserLoginErr>;
-};
+export type LoginUserResult = User | ErrorOnUserLogin;
 
 export type Passcode = {
    __typename?: 'Passcode';
@@ -94,8 +90,8 @@ export type QueryUserCanLogInArgs = {
 
 export type Mutation = {
    __typename?: 'Mutation';
-  createNewUSER?: Maybe<NewUserResult>;
-  toggleUSERLogIn: LoginUserResult;
+  createNewUser: NewUserResult;
+  toggleUserLogIn: LoginUserResult;
 };
 
 
@@ -106,9 +102,8 @@ export type MutationCreateNewUserArgs = {
 
 
 export type MutationToggleUserLogInArgs = {
-  secret: Scalars['String'];
-  TTL: Scalars['Int'];
   id: Scalars['String'];
+  isLoggedIn: Scalars['Boolean'];
 };
 
 export enum CacheControlScope {
@@ -200,8 +195,9 @@ export type ResolversTypes = {
   AllUsersSuccess: ResolverTypeWrapper<AllUsersSuccess>,
   AllUsersFailure: ResolverTypeWrapper<AllUsersFailure>,
   AllUsersResult: ResolversTypes['AllUsersSuccess'] | ResolversTypes['AllUsersFailure'],
-  NewUserResult: ResolverTypeWrapper<NewUserResult>,
-  LoginUserResult: ResolverTypeWrapper<LoginUserResult>,
+  NewUserResult: ResolversTypes['User'] | ResolversTypes['UserAlreadyExistsErr'],
+  ErrorOnUserLogin: ResolverTypeWrapper<ErrorOnUserLogin>,
+  LoginUserResult: ResolversTypes['User'] | ResolversTypes['ErrorOnUserLogin'],
   Passcode: ResolverTypeWrapper<Passcode>,
   Int: ResolverTypeWrapper<Scalars['Int']>,
   Query: ResolverTypeWrapper<{}>,
@@ -222,8 +218,9 @@ export type ResolversParentTypes = {
   AllUsersSuccess: AllUsersSuccess,
   AllUsersFailure: AllUsersFailure,
   AllUsersResult: ResolversParentTypes['AllUsersSuccess'] | ResolversParentTypes['AllUsersFailure'],
-  NewUserResult: NewUserResult,
-  LoginUserResult: LoginUserResult,
+  NewUserResult: ResolversParentTypes['User'] | ResolversParentTypes['UserAlreadyExistsErr'],
+  ErrorOnUserLogin: ErrorOnUserLogin,
+  LoginUserResult: ResolversParentTypes['User'] | ResolversParentTypes['ErrorOnUserLogin'],
   Passcode: Passcode,
   Int: Scalars['Int'],
   Query: {},
@@ -275,17 +272,17 @@ export type AllUsersResultResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type NewUserResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewUserResult'] = ResolversParentTypes['NewUserResult']> = {
-  status?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  success?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
-  failure?: Resolver<Maybe<ResolversTypes['UserAlreadyExistsErr']>, ParentType, ContextType>,
+  __resolveType: TypeResolveFn<'User' | 'UserAlreadyExistsErr', ParentType, ContextType>
+};
+
+export type ErrorOnUserLoginResolvers<ContextType = any, ParentType extends ResolversParentTypes['ErrorOnUserLogin'] = ResolversParentTypes['ErrorOnUserLogin']> = {
+  UserLoginErr?: Resolver<Maybe<ResolversTypes['UserLoginErr']>, ParentType, ContextType>,
+  UserNotFoundErr?: Resolver<Maybe<ResolversTypes['UserNotFoundErr']>, ParentType, ContextType>,
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
 export type LoginUserResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['LoginUserResult'] = ResolversParentTypes['LoginUserResult']> = {
-  status?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  success?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
-  failure?: Resolver<Maybe<ResolversTypes['UserLoginErr']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  __resolveType: TypeResolveFn<'User' | 'ErrorOnUserLogin', ParentType, ContextType>
 };
 
 export type PasscodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Passcode'] = ResolversParentTypes['Passcode']> = {
@@ -302,8 +299,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createNewUSER?: Resolver<Maybe<ResolversTypes['NewUserResult']>, ParentType, ContextType, RequireFields<MutationCreateNewUserArgs, 'username'>>,
-  toggleUSERLogIn?: Resolver<ResolversTypes['LoginUserResult'], ParentType, ContextType, RequireFields<MutationToggleUserLogInArgs, 'secret' | 'TTL' | 'id'>>,
+  createNewUser?: Resolver<ResolversTypes['NewUserResult'], ParentType, ContextType, RequireFields<MutationCreateNewUserArgs, 'username'>>,
+  toggleUserLogIn?: Resolver<ResolversTypes['LoginUserResult'], ParentType, ContextType, RequireFields<MutationToggleUserLogInArgs, 'id' | 'isLoggedIn'>>,
 };
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -319,8 +316,9 @@ export type Resolvers<ContextType = any> = {
   AllUsersSuccess?: AllUsersSuccessResolvers<ContextType>,
   AllUsersFailure?: AllUsersFailureResolvers<ContextType>,
   AllUsersResult?: AllUsersResultResolvers,
-  NewUserResult?: NewUserResultResolvers<ContextType>,
-  LoginUserResult?: LoginUserResultResolvers<ContextType>,
+  NewUserResult?: NewUserResultResolvers,
+  ErrorOnUserLogin?: ErrorOnUserLoginResolvers<ContextType>,
+  LoginUserResult?: LoginUserResultResolvers,
   Passcode?: PasscodeResolvers<ContextType>,
   Query?: QueryResolvers<ContextType>,
   Mutation?: MutationResolvers<ContextType>,
