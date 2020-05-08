@@ -58,6 +58,7 @@ export const typeDefs = gql`
   }
 
   type Query {
+    me: User
     user(id: String!): UserResult!
     users: AllUsersResult!
     usersWithStatus(isLoggedIn: Boolean!): AllUsersResult!

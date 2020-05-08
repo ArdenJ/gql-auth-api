@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "concurrently \"npm run jsonserver\" \"nodemon\" \"npm run generate\"",
     "generate": "graphql-codegen --config codegen.yml",
+    "prisma:gen": "prisma generate",
+    "migrate:save": "prisma migrate save --experimental",
+    "migrate:up": "prisma migrate up --experimental",
     "lint": "eslint --fix --ext .ts --fix",
     "jsonserver": "json-server --watch src/db/data.json --port 5555",
     "start": "nodemon",
@@ -15,17 +18,27 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^2.0.0-beta.4",
     "apollo-server": "^2.12.0",
     "apollo-server-lambda": "^2.12.0",
+    "bcryptjs": "^2.4.3",
     "graphql": "^15.0.0",
-    "node-fetch": "^2.6.0"
+    "jsonwebtoken": "^8.5.1",
+    "node-fetch": "^2.6.0",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.13.4",
     "@graphql-codegen/introspection": "1.13.4",
     "@graphql-codegen/typescript": "1.13.4",
     "@graphql-codegen/typescript-resolvers": "1.13.4",
+    "@prisma/cli": "^2.0.0-beta.4",
     "@types/node": "^13.13.4",
+    "@types/node-fetch": "^2.5.7",
+    "@types/passport": "^1.0.3",
+    "@types/passport-jwt": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
     "concurrently": "^5.2.0",

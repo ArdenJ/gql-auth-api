@@ -1,9 +1,24 @@
 import fetch from 'node-fetch'
 import { ApolloError } from 'apollo-server'
+import { 
+  getUsers, 
+  getUsersByAttr, 
+  getUserById, 
+  getUserByAttr, 
+  createUser, 
+  toggleUserStatus 
+} from './prisma-functions';
+
+// The resolvers are quite opinionated...
+// When a request is made to the api Apollo either returns a fragment 
+// on the requested type or some kind of error/failure type with a reason.
+// This is designed to remove the need to interpret the response on the client 
+// side. Instead, if the expected type is not returned, the client only needs 
+// to check that the expected type has been returned rather than an error.
+
+import { authenticated } from './utils/auth-guard'
 
 import {
-  User,
-  Resolvers,
   UserResult,
   AllUsersResult,
   NewUserResult,
@@ -15,11 +30,10 @@ const UNHANDLED_ACTION = ({err}: any) => new ApolloError(`APOLLO ERR -- UNHANDLE
 export const resolvers = {
   // QUERIES
   Query: {
+    me: authenticated((root, args, {req, authenticate}, info) => authenticate(req).currentUser),
     user: async (root, { id }, { db }, info): Promise<UserResult> => {
       try {
-        const res = await fetch(db)
-        const users = await res.json()
-        const user = await users.find(i => i.id === id)
+        const user = await getUserById(id)
         if (await user) {
           return {
             __typename: "User",
@@ -37,13 +51,12 @@ export const resolvers = {
 
     users: async (root, args, { db }, info): Promise<AllUsersResult> => {
       try {
-        const res = await fetch(db)
-        const users = await res.json()
-        console.log(users)
-        if (await users.length !== 0) {
+        const res = await getUsers()
+        console.log(res)
+        if (await res.length !== 0) {
           return {
             __typename: "AllUsersSuccess",
-            result: [...users],
+            result: [...res],
           }
         }
         return {
@@ -57,22 +70,17 @@ export const resolvers = {
     },
 
     usersWithStatus: async (root, { isLoggedIn }, { db }, info): Promise<AllUsersResult> => {
-
       try {
-        const res = await fetch(db)
-        const users = await res.json()
-        if (await users) {
-          const matching = users.filter(user => user.isLoggedIn === isLoggedIn)
-          if (matching.length > 0) {
-            return {
-              __typename: 'AllUsersSuccess',
-              result: [...matching],
-            }
-          }
+        const users = await getUsersByAttr({ isLoggedIn: isLoggedIn })
+        if (users.length > 0) {
           return {
-            __typename: 'AllUsersFailure',
-            message: `There are currently no registered users matching status ${isLoggedIn}` 
+            __typename: 'AllUsersSuccess',
+            result: [...users],
           }
+        }
+        return {
+          __typename: 'AllUsersFailure',
+          message: `There are currently no registered users matching status ${isLoggedIn}` 
         }
       } catch (err) {
           throw UNHANDLED_ACTION(err)
@@ -80,10 +88,7 @@ export const resolvers = {
     },
     userCanLogIn: async (root, { id }, { db }, info): Promise<UserResult> => {
       try {
-        const res = await fetch(db)
-        const users = await res.json()
-        const user = await users.find(i => i.id === id)
- 
+        const user = await getUserById(id)
         if (await user && !user.isLoggedIn) {
           return {
             __typename: "User",
@@ -111,7 +116,7 @@ export const resolvers = {
       id: id,
       username: username,
       email: email,
-      dateCreated: Date.now(),
+      dateCreated: Date.now().toString(),
       isLoggedIn: (false)
     }
     try {
@@ -122,15 +127,10 @@ export const resolvers = {
         message: `A user w/ username ${NEW_USER.username} already exists` 
       }
 
-      const newUser =  await fetch(db, {
-        method: 'POST', 
-        body: JSON.stringify(NEW_USER), 
-        headers: {'Content-Type': 'application/json'
-      }})
-      const res = await newUser.json()
+      const newUser = await createUser(NEW_USER)
       return {
         __typename: 'User',
-        ...res
+        ...newUser
       }
     } catch (err) {
       throw UNHANDLED_ACTION(err)
@@ -138,36 +138,25 @@ export const resolvers = {
   },
   toggleUserLogIn: async (root, {id, isLoggedIn}, { db }, info):Promise<LoginUserResult> => {
     try {
-      const test = await fetch(db)
-      const response = await test.json() 
-      const findUser = await response.filter(i => i.id === id)
-      if (await findUser.length === 0) return {
+      const user = await getUserById(id)
+      if (await !user) return {
         __typename: 'ErrorOnUserLogin',
         UserNotFoundErr: {
           __typename: 'UserNotFoundErr',
           message: `A user w/ id ${id} doesn't exists` 
         }
       } 
-      else if (await findUser[0].isLoggedIn === isLoggedIn) return {
+      else if (await user.isLoggedIn === isLoggedIn) return {
         __typename: 'ErrorOnUserLogin',
         UserLoginErr: {
           __typename: 'UserLoginErr',
           message: `The user w/ id ${id} could not be set to ${isLoggedIn} because their status is already ${isLoggedIn}}` 
         }
       }
-      const updateUser = {
-        ...findUser[0],
-        isLoggedIn: isLoggedIn
-      }
-      const toggledUser =  await fetch(`${db}/${id}`, {
-        method: 'PATCH', 
-        body: JSON.stringify(updateUser), 
-        headers: {'Content-Type': 'application/json'
-      }})
-      const res = await toggledUser.json()
+      const toggledUser =  await toggleUserStatus(id, isLoggedIn)
       return {
         __typename: 'User',
-        ...res
+        ...toggledUser
       }
     } catch (err) {
       throw UNHANDLED_ACTION(err)

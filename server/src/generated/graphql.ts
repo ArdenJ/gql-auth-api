@@ -8,6 +8,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -67,6 +68,7 @@ export type Passcode = {
 
 export type Query = {
    __typename?: 'Query';
+  me?: Maybe<User>;
   user: UserResult;
   users: AllUsersResult;
   usersWithStatus: AllUsersResult;
@@ -292,6 +294,7 @@ export type PasscodeResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
   user?: Resolver<ResolversTypes['UserResult'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>,
   users?: Resolver<ResolversTypes['AllUsersResult'], ParentType, ContextType>,
   usersWithStatus?: Resolver<ResolversTypes['AllUsersResult'], ParentType, ContextType, RequireFields<QueryUsersWithStatusArgs, 'isLoggedIn'>>,

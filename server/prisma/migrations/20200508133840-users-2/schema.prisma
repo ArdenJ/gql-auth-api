@@ -1,0 +1,22 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url = "***"
+}
+
+// this will automaically target the node modules 
+// folder to generate the client and the native 
+// binary: https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/generators 
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id String @id 
+  username String @unique
+  email String? @unique
+  dateCreated DateTime 
+  isLoggedIn Boolean @default(false)
+}

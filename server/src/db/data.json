@@ -5,7 +5,7 @@
       "username": "lenin_online",
       "email": "j.gaddas@outlook.com",
       "dateCreated": "2020-05-03",
-      "isLoggedIn": true
+      "isLoggedIn": false
     },
     {
       "id": "no",
@@ -33,6 +33,13 @@
       "username": "dowork12",
       "email": "nope",
       "dateCreated": 1588748858749,
+      "isLoggedIn": false
+    },
+    {
+      "id": "b3a6f4082b7d63a1ce13",
+      "username": "dowork123",
+      "email": "nope",
+      "dateCreated": 1588756842006,
       "isLoggedIn": false
     }
   ]
