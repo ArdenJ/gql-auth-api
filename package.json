@@ -1,0 +1,22 @@
+{
+  "name": "gql-auth",
+  "version": "1.0.0",
+  "description": "Auth",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArdenJ/gql-auth-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ArdenJ/gql-auth-api/issues"
+  },
+  "homepage": "https://github.com/ArdenJ/gql-auth-api#readme",
+  "dependencies": {
+    "@prisma/client": "^2.0.0-beta.4"
+  }
+}
