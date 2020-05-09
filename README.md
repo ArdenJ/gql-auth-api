@@ -1,26 +1,33 @@
-# Authentication API on a GQL endpoint wooo 🔥
+# Auth API on a GQL endpoint wooo 🔥
 
-## Set Up 
-Some of this is overkill and can be optimised. 
-The API is constructed in three stages: 
-  run the docker container -> use prisma migrate to generate models -> start the apollo server 
+The idea of this project is to build an authentication / authorization gql api that 
+handles secrets (relatively) securely. This project is an opportunity to really focus 
+on handling data, validation / sanitisation, error handling and being aware of basic 
+security concerns. 
 
+## Quick Start API: 
+Note: this needs to be optimised!
+
+install dependencies in the root and /server 
+
+run the docker container from the root of the project
 ```
-  npm i 
-  cd server
-  npm i prefix
+  docker-composer up -d 
+```
+run the following on the server:
+```
   npx prisma generate 
   npx prisma migrate save --experimental 
   npx prisma migrate up --experimental -v 
-  cd ..
-  docker-composer up -d 
-  cd server && npm run dev
+  npm run dev
 ```
 
-## Wanna Dos 
-- things
+## To Dos 
+- so so many 
 
-## Wanna Use
+## Using
+Note: Frankly, the below is overkill for the scope of this application. 
+
 - 🚀  Apollo Server ✅
   - GQL API endpoint
 - 🚀  Apollo Client v3 
@@ -30,12 +37,8 @@ The API is constructed in three stages:
 - 🐳  Docker ✅
   - Container for database
 - 🔺  Prisma ✅
-  - (basically an ORM) for interacting with the database
+  - (somewhere between an ORM and query builder) for interacting with the database
 - ❌  XState
 - 🔐  JWT
 - 🤐  BCrypt
   - Using BCryptjs rather than installing a billion other dependencies 
-
-Note: This stack is far too much for the scope of this application. 
-
-  
