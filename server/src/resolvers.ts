@@ -1,6 +1,9 @@
 import { createToken } from './auth/gen-token';
 import { encrypt, validatePassword } from './utils/hash-secret';
 import { ApolloError } from 'apollo-server'
+
+import {sanitizeUserObj as sanitize}  from './utils/sanitize'
+
 import { 
   getUsers, 
   getUsersByAttr, 
@@ -17,31 +20,50 @@ import {
 // side. Instead, if the expected type is not returned, the client only needs 
 // to check that the expected type has been returned rather than an error.
 
-import { authenticated } from './utils/auth-guard'
-
 import {
-  User,
   UserResult,
+  UserAuth,
   AllUsersResult,
   NewUserResult,
   LoginUserResult,
   DeleteUserResult,
 } from './generated/graphql'
 
-const returnUser = (user):User => {
-  const returned = user
-  delete returned.password
-  return returned
-}
-
-
 const UNHANDLED_ACTION = ({err}: any) => new ApolloError(`APOLLO ERR -- UNHANDLED ACTION: ${err}`)
 
 export const resolvers = {
   // QUERIES
   Query: {
-    me: authenticated((root, args, {req, authenticate}, info) => authenticate(req).currentUser),
-    user: async (root, { id }, { db }, info): Promise<UserResult> => {
+    currentUser: async (root, args, {req, authenticate}, info):Promise<UserAuth> => {
+      try {
+        const response = await authenticate(req)
+
+        if (!response) return {
+          __typename: 'ErrorOnUserAuth',
+          UnableToAutheticateReq: {
+            message: 'Unable to authenticate request'
+          }
+        }
+
+        const user = await getUserById(response?.id)
+
+        if (!user.id) return {
+          __typename: 'ErrorOnUserAuth',
+          UserNotFoundErr: {
+            message: 'Unable to authenticate: user does not exist'
+          },
+        }
+
+        return {
+          __typename: 'User',
+          ...sanitize(user)
+        }
+      } catch (e) {
+        throw UNHANDLED_ACTION(e)
+      }
+    },
+
+    user: async (root, { id }, ctx, info): Promise<UserResult> => {
       try {
         const user = await getUserById(id)
         if (await user) {
@@ -59,7 +81,7 @@ export const resolvers = {
       }
     },
 
-    users: async (root, args, { db }, info): Promise<AllUsersResult> => {
+    users: async (root, args, ctx, info): Promise<AllUsersResult> => {
       try {
         const res = await getUsers()
         console.log(res)
@@ -79,7 +101,7 @@ export const resolvers = {
 
     },
 
-    usersWithStatus: async (root, { isLoggedIn }, { db }, info): Promise<AllUsersResult> => {
+    usersWithStatus: async (root, { isLoggedIn }, ctx, info): Promise<AllUsersResult> => {
       try {
         const users = await getUsersByAttr({ isLoggedIn: isLoggedIn })
         if (users.length > 0) {
@@ -96,7 +118,7 @@ export const resolvers = {
           throw UNHANDLED_ACTION(err)
       }
     },
-    userCanLogIn: async (root, { id }, { db }, info): Promise<UserResult> => {
+    userCanLogIn: async (root, { id }, ctx, info): Promise<UserResult> => {
       try {
         const user = await getUserById(id)
         if (await user && !user.isLoggedIn) {
@@ -122,7 +144,7 @@ export const resolvers = {
   Mutation: {
   // MUTATIONS
   createNewUser: async (
-    root, { username, email, password, passwordConfirmation }, { db, id }, info
+    root, { username, email, password, passwordConfirmation }, { id }, info
     ):Promise<NewUserResult> => {
 
     const NEW_USER = {
@@ -164,7 +186,7 @@ export const resolvers = {
 
       return {
         __typename: 'User',
-        ...returnUser(newUser)
+        ...sanitize(newUser)
       }
     } catch (err) {
       throw UNHANDLED_ACTION(err)
@@ -205,8 +227,8 @@ export const resolvers = {
 
       return {
         __typename: 'SuccessOnUserLogin',
-        token: createToken(returnUser(loggedInUser)),
-        currentUser: returnUser(loggedInUser)
+        token: createToken(sanitize(loggedInUser)),
+        currentUser: sanitize(loggedInUser)
       }
 
     } catch (e) {
@@ -214,7 +236,7 @@ export const resolvers = {
     }
   },
 
-  toggleUserLogIn: async (root, {id, isLoggedIn}, { db }, info):Promise<LoginUserResult> => {
+  toggleUserLogIn: async (root, {id, isLoggedIn}, ctx, info):Promise<LoginUserResult> => {
     try {
       const user = await getUserById(id)
       if (!user) return {
@@ -243,45 +265,6 @@ export const resolvers = {
       throw UNHANDLED_ACTION(err)
     }
   },
-  // userLogin: async (root, {username, password}, ctx, info):Promise<LoginUserResult> => {
-  //   try {
-
-  //     const user = await getUserByAttr({username})
-
-  //     const returnUser = (user) => {
-  //       const returned = user
-  //       delete returned.password
-  //       return returned
-  //     }
-
-  //     if (!user) return {
-  //       __typename: 'ErrorOnUserLogin',
-  //       UserNotFoundErr: {
-  //         __typename: 'UserNotFoundErr',
-  //         message: `A user w/ username "${username}" doesn't exists` 
-  //       }
-  //     }
-
-  //     const isValid = await validatePassword(password, user)
-  //     console.log(isValid)
-  //     if (!isValid) return {
-  //       __typename: 'ErrorOnUserLogin', 
-  //       UserLoginErr: {
-  //         __typename: 'UserLoginErr',
-  //         message: 'There was a problem logging in: the username or password is incorrect'
-  //       }
-  //     }
-
-  //     return {
-  //       __typename: 'SuccessOnUserLogin',
-  //       token: createToken(returnUser(user)),
-  //       currentUser: returnUser(user)
-  //     }
-      
-  //   } catch (err) {
-  //     throw UNHANDLED_ACTION(err)
-  //   }
-  // },
 },
 
   // RESOLVE UNION TYPES
@@ -340,6 +323,19 @@ export const resolvers = {
       }
       if(obj.UserNotFoundErr) {
         return 'ErrorOnUserLogin'
+      }
+    }
+  },
+  UserAuth: {
+    __resolveType(obj) {
+      if(obj.id) {
+        return 'User'
+      }
+      if(obj.UserNotFoundErr) {
+        return 'ErrorOnUserAuth'
+      }
+      if(obj.UnableToAutheticateReq) {
+        return 'ErrorOnUserAuth'
       }
     }
   }

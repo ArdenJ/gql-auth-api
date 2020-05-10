@@ -26,6 +26,17 @@ export const typeDefs = gql`
   # Therefore, no user must be an error
   union UserResult = User | UserNotFoundErr 
 
+  type UnableToAutheticateReq {
+    message: String!
+  }
+
+  type ErrorOnUserAuth {
+    UserNotFoundErr: UserNotFoundErr
+    UnableToAutheticateReq: UnableToAutheticateReq
+  }
+
+  union UserAuth = User | ErrorOnUserAuth
+
   # ALL USERS 
   # This feels like a really long winded way of returning 
   # either a string or an array from a query but you can't 
@@ -65,8 +76,7 @@ export const typeDefs = gql`
   union DeleteUserResult = DeleteUserSuccess | UserNotFoundErr
 
   type Query {
-    me: User
-    currentUser: UserResult!
+    currentUser: UserAuth!
     user(id: String!): UserResult!
     users: AllUsersResult!
     usersWithStatus(isLoggedIn: Boolean!): AllUsersResult!
@@ -84,8 +94,6 @@ export const typeDefs = gql`
     toggleUserLogIn(id: String! isLoggedIn: Boolean!): LoginUserResult!
 
     userLogin(username: String! password: String!): LoginUserResult!
-
-    setCurrentUser(id: String!): UserResult!
 
     deleteUser(id: String!): DeleteUserResult!
   }

@@ -4,7 +4,8 @@ import crypto from 'crypto'
 
 import { typeDefs } from './schema'
 import { resolvers } from './resolvers'
-import { tradeTokenForUser } from './utils/auth-helpers'
+import { tradeTokenForUser } from './auth/auth-helpers'
+import { User } from './generated/graphql'
 
 const HEADER_NAME = 'authorization'
 
@@ -17,13 +18,12 @@ const genServer = () => {
     playground: true,
     context: async ({ req }) => ({
       req: req,
-      id: crypto.randomBytes(10).toString('hex'),
-      db: `http://localhost:5555/users`,
-      serverTime: () => new Date(),
-      authenticate: async (req) => {
+      id: crypto.randomBytes(10).toString('hex'), 
+      db: `http://localhost:5555/users`, //TODO: Delete
+
+      authenticate: async (req):Promise<User | string | null> => {
       let authToken = null
       let currentUser = null
-
       try {
         authToken = req.headers[HEADER_NAME]
 
@@ -32,13 +32,11 @@ const genServer = () => {
         }
 
       } catch (err) {
+        console.log(err)
         console.warn(`Unable to authenticate w/ token ${authToken}`)
       }
 
-      return {
-        authToken,
-        currentUser
-      }
+      return currentUser
     }
   })
   })

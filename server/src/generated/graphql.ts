@@ -37,6 +37,19 @@ export type UserLoginErr = {
 
 export type UserResult = User | UserNotFoundErr;
 
+export type UnableToAutheticateReq = {
+   __typename?: 'UnableToAutheticateReq';
+  message: Scalars['String'];
+};
+
+export type ErrorOnUserAuth = {
+   __typename?: 'ErrorOnUserAuth';
+  UserNotFoundErr?: Maybe<UserNotFoundErr>;
+  UnableToAutheticateReq?: Maybe<UnableToAutheticateReq>;
+};
+
+export type UserAuth = User | ErrorOnUserAuth;
+
 export type AllUsersSuccess = {
    __typename?: 'AllUsersSuccess';
   result: Array<Maybe<User>>;
@@ -74,8 +87,7 @@ export type DeleteUserResult = DeleteUserSuccess | UserNotFoundErr;
 
 export type Query = {
    __typename?: 'Query';
-  me?: Maybe<User>;
-  currentUser: UserResult;
+  currentUser: UserAuth;
   user: UserResult;
   users: AllUsersResult;
   usersWithStatus: AllUsersResult;
@@ -102,7 +114,6 @@ export type Mutation = {
   createNewUser: NewUserResult;
   toggleUserLogIn: LoginUserResult;
   userLogin: LoginUserResult;
-  setCurrentUser: UserResult;
   deleteUser: DeleteUserResult;
 };
 
@@ -124,11 +135,6 @@ export type MutationToggleUserLogInArgs = {
 export type MutationUserLoginArgs = {
   username: Scalars['String'];
   password: Scalars['String'];
-};
-
-
-export type MutationSetCurrentUserArgs = {
-  id: Scalars['String'];
 };
 
 
@@ -222,6 +228,9 @@ export type ResolversTypes = {
   UserAlreadyExistsErr: ResolverTypeWrapper<UserAlreadyExistsErr>,
   UserLoginErr: ResolverTypeWrapper<UserLoginErr>,
   UserResult: ResolversTypes['User'] | ResolversTypes['UserNotFoundErr'],
+  UnableToAutheticateReq: ResolverTypeWrapper<UnableToAutheticateReq>,
+  ErrorOnUserAuth: ResolverTypeWrapper<ErrorOnUserAuth>,
+  UserAuth: ResolversTypes['User'] | ResolversTypes['ErrorOnUserAuth'],
   AllUsersSuccess: ResolverTypeWrapper<AllUsersSuccess>,
   AllUsersFailure: ResolverTypeWrapper<AllUsersFailure>,
   AllUsersResult: ResolversTypes['AllUsersSuccess'] | ResolversTypes['AllUsersFailure'],
@@ -246,6 +255,9 @@ export type ResolversParentTypes = {
   UserAlreadyExistsErr: UserAlreadyExistsErr,
   UserLoginErr: UserLoginErr,
   UserResult: ResolversParentTypes['User'] | ResolversParentTypes['UserNotFoundErr'],
+  UnableToAutheticateReq: UnableToAutheticateReq,
+  ErrorOnUserAuth: ErrorOnUserAuth,
+  UserAuth: ResolversParentTypes['User'] | ResolversParentTypes['ErrorOnUserAuth'],
   AllUsersSuccess: AllUsersSuccess,
   AllUsersFailure: AllUsersFailure,
   AllUsersResult: ResolversParentTypes['AllUsersSuccess'] | ResolversParentTypes['AllUsersFailure'],
@@ -287,6 +299,21 @@ export type UserLoginErrResolvers<ContextType = any, ParentType extends Resolver
 
 export type UserResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserResult'] = ResolversParentTypes['UserResult']> = {
   __resolveType: TypeResolveFn<'User' | 'UserNotFoundErr', ParentType, ContextType>
+};
+
+export type UnableToAutheticateReqResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnableToAutheticateReq'] = ResolversParentTypes['UnableToAutheticateReq']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
+export type ErrorOnUserAuthResolvers<ContextType = any, ParentType extends ResolversParentTypes['ErrorOnUserAuth'] = ResolversParentTypes['ErrorOnUserAuth']> = {
+  UserNotFoundErr?: Resolver<Maybe<ResolversTypes['UserNotFoundErr']>, ParentType, ContextType>,
+  UnableToAutheticateReq?: Resolver<Maybe<ResolversTypes['UnableToAutheticateReq']>, ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
+export type UserAuthResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserAuth'] = ResolversParentTypes['UserAuth']> = {
+  __resolveType: TypeResolveFn<'User' | 'ErrorOnUserAuth', ParentType, ContextType>
 };
 
 export type AllUsersSuccessResolvers<ContextType = any, ParentType extends ResolversParentTypes['AllUsersSuccess'] = ResolversParentTypes['AllUsersSuccess']> = {
@@ -333,8 +360,7 @@ export type DeleteUserResultResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
-  currentUser?: Resolver<ResolversTypes['UserResult'], ParentType, ContextType>,
+  currentUser?: Resolver<ResolversTypes['UserAuth'], ParentType, ContextType>,
   user?: Resolver<ResolversTypes['UserResult'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>,
   users?: Resolver<ResolversTypes['AllUsersResult'], ParentType, ContextType>,
   usersWithStatus?: Resolver<ResolversTypes['AllUsersResult'], ParentType, ContextType, RequireFields<QueryUsersWithStatusArgs, 'isLoggedIn'>>,
@@ -345,7 +371,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createNewUser?: Resolver<ResolversTypes['NewUserResult'], ParentType, ContextType, RequireFields<MutationCreateNewUserArgs, 'username' | 'password' | 'passwordConfirmation'>>,
   toggleUserLogIn?: Resolver<ResolversTypes['LoginUserResult'], ParentType, ContextType, RequireFields<MutationToggleUserLogInArgs, 'id' | 'isLoggedIn'>>,
   userLogin?: Resolver<ResolversTypes['LoginUserResult'], ParentType, ContextType, RequireFields<MutationUserLoginArgs, 'username' | 'password'>>,
-  setCurrentUser?: Resolver<ResolversTypes['UserResult'], ParentType, ContextType, RequireFields<MutationSetCurrentUserArgs, 'id'>>,
   deleteUser?: Resolver<ResolversTypes['DeleteUserResult'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>,
 };
 
@@ -359,6 +384,9 @@ export type Resolvers<ContextType = any> = {
   UserAlreadyExistsErr?: UserAlreadyExistsErrResolvers<ContextType>,
   UserLoginErr?: UserLoginErrResolvers<ContextType>,
   UserResult?: UserResultResolvers,
+  UnableToAutheticateReq?: UnableToAutheticateReqResolvers<ContextType>,
+  ErrorOnUserAuth?: ErrorOnUserAuthResolvers<ContextType>,
+  UserAuth?: UserAuthResolvers,
   AllUsersSuccess?: AllUsersSuccessResolvers<ContextType>,
   AllUsersFailure?: AllUsersFailureResolvers<ContextType>,
   AllUsersResult?: AllUsersResultResolvers,
