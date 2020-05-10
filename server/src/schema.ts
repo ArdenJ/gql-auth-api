@@ -1,3 +1,4 @@
+import { UserNotFoundErr, UserResult } from './generated/graphql';
 import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
@@ -50,15 +51,22 @@ export const typeDefs = gql`
     UserNotFoundErr: UserNotFoundErr
   }
 
-  union LoginUserResult = User | ErrorOnUserLogin
-
-  type Passcode {
-    secret: String!
-    TTL: Int!
+  type SuccessOnUserLogin {
+    token: String
+    currentUser: User 
   }
+
+  union LoginUserResult = SuccessOnUserLogin | ErrorOnUserLogin
+
+  type DeleteUserSuccess {
+    message: String
+  }
+
+  union DeleteUserResult = DeleteUserSuccess | UserNotFoundErr
 
   type Query {
     me: User
+    currentUser: UserResult!
     user(id: String!): UserResult!
     users: AllUsersResult!
     usersWithStatus(isLoggedIn: Boolean!): AllUsersResult!
@@ -68,11 +76,17 @@ export const typeDefs = gql`
   type Mutation {
     # create returns a USER or an error the username 
     # is not unique 
-    createNewUser(username: String!, email: String): NewUserResult!
+    createNewUser(username: String!, email: String password: String! passwordConfirmation: String!): NewUserResult!
 
     # toggle returns either a USER, an Err if a USER 
     # cannot be found, or an log in error if they try 
     # to log out while already out and vice versa 
     toggleUserLogIn(id: String! isLoggedIn: Boolean!): LoginUserResult!
+
+    userLogin(username: String! password: String!): LoginUserResult!
+
+    setCurrentUser(id: String!): UserResult!
+
+    deleteUser(id: String!): DeleteUserResult!
   }
 `

@@ -1,12 +1,19 @@
 import { catchAsync } from './utils/errors';
 import { PrismaClient } from '@prisma/client'
+import { User } from './generated/graphql';
 
 const prisma = new PrismaClient()
+
+const returnUser = (user) => {
+  const returned = user
+  delete returned.password
+  return returned
+}
 
 // Query selectors
 export const getUsers = async () => await prisma.user.findMany()
 
-export const getUsersByAttr =  async (arg: object) => await prisma.user.findMany({
+export const getUsersByAttr =  async (arg) => await prisma.user.findMany({
   where: arg
 })
 
@@ -32,11 +39,13 @@ export const createUser = async (args) => {
     }
   })
 
-  return await prisma.user.findOne({
+  const USER = await prisma.user.findOne({
     where: {
       username: args.username
     }
   })
+
+  return USER
 }
 
 export const toggleUserStatus = async (id, newStatus:boolean) => {
