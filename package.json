@@ -15,5 +15,6 @@
   "bugs": {
     "url": "https://github.com/ArdenJ/gql-auth-api/issues"
   },
-  "homepage": "https://github.com/ArdenJ/gql-auth-api#readme"
+  "homepage": "https://github.com/ArdenJ/gql-auth-api#readme",
+  "dependencies": {}
 }

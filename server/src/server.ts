@@ -19,26 +19,25 @@ const genServer = () => {
     context: async ({ req }) => ({
       req: req,
       id: crypto.randomBytes(10).toString('hex'), 
-      db: `http://localhost:5555/users`, //TODO: Delete
 
       authenticate: async (req):Promise<User | string | null> => {
-      let authToken = null
-      let currentUser = null
-      try {
-        authToken = req.headers[HEADER_NAME]
+        let authToken = null
+        let currentUser = null
+        try {
+          authToken = req.headers[HEADER_NAME]
 
-        if (authToken) {
-          currentUser = await tradeTokenForUser(authToken)
+          if (authToken) {
+            currentUser = await tradeTokenForUser(authToken)
+          }
+
+        } catch (err) {
+          console.log(err)
+          console.warn(`Unable to authenticate w/ token ${authToken}`)
         }
 
-      } catch (err) {
-        console.log(err)
-        console.warn(`Unable to authenticate w/ token ${authToken}`)
+        return currentUser
       }
-
-      return currentUser
-    }
-  })
+    })
   })
 } 
 
