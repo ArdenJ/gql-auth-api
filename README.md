@@ -25,14 +25,16 @@ run the following on the server:
 ## To Dos 
 - Sanitise message responses: 
   - Error messages returned to the client can potentially give away details about what is/isn't on the database
-- Validate data being passed to database server 
-  - Password format
-  - email address format
+- **Validate data being passed to database server**
+  - Username should only include letters, numbers, and certain characters 
+  - Password format ✅
+  - email address format ✅
 - Add Role to user model/type
   - API queries should follow principal of least privilege
 - Protect sensitive routes by validating User/Role 
-- Fix try catch statements
-- Remove hardcoded secrets
+- Fix try catch statements ✅
+- Remove hardcoded 'secrets'
+- **Handle token expiry?** 
 
 ## Using
 Note: Frankly, the below is overkill for the scope of this application. 
