@@ -1,14 +1,6 @@
-import { catchAsync } from './utils/errors';
 import { PrismaClient } from '@prisma/client'
-import { User } from './generated/graphql';
 
 const prisma = new PrismaClient()
-
-const returnUser = (user) => {
-  const returned = user
-  delete returned.password
-  return returned
-}
 
 // Query selectors
 export const getUsers = async () => await prisma.user.findMany()

@@ -1,8 +1,9 @@
-import { createToken } from './auth/gen-token';
-import { encrypt, validatePassword } from './utils/hash-secret';
 import { ApolloError } from 'apollo-server'
 
+import { createToken } from './auth/gen-token';
+import { encrypt, validatePassword } from './utils/hash-secret';
 import {sanitizeUserObj as sanitize}  from './utils/sanitize'
+import { validate } from './validate/user-validation';
 
 import { 
   getUsers, 
@@ -29,7 +30,7 @@ import {
   DeleteUserResult,
 } from './generated/graphql'
 
-const UNHANDLED_ACTION = ({err}: any) => new ApolloError(`APOLLO ERR -- UNHANDLED ACTION: ${err}`)
+const UNHANDLED_ACTION = (err: any) => new ApolloError(`APOLLO ERR -- UNHANDLED ACTION: ${err}`, err.stack)
 
 export const resolvers = {
   // QUERIES
@@ -157,19 +158,35 @@ export const resolvers = {
 
     try {
       // TODO: this should be a mismatch err type
+      // Do passwords match?
       if (password !== passwordConfirmation) return {
         __typename: 'UserAlreadyExistsErr',
         message: 'Passwords must match'
       } 
       
       // TODO: combine requests to db if you need to make multiple checks.
+      // is the username taken?
       const usernameResponse = await getUserByAttr({ username: username })
-
+      
       if (usernameResponse !== null ) return {
         __typename: 'UserAlreadyExistsErr',
         message: `A user w/ username ${NEW_USER.username} already exists` 
       }
+      
+      // are the username, email and password valid?
+      const result = await validate({
+        username, 
+        email, 
+        password, 
+        passwordConfirmation
+      }).catch(err => console.log(err))
 
+      if (result?.message) return {
+        __typename: 'UserAlreadyExistsErr',
+        message: `There was an issue ${result?.message}`
+      }
+
+      // Does an account with this email address exist already?
       const emailResponse = await getUserByAttr({ email: email })
 
       if (emailResponse !== null ) return {
@@ -177,6 +194,7 @@ export const resolvers = {
         message: `A user w/ this email already exists` 
       }
 
+      // If none of the above match -> hash the password and create a new user
       const hashedPassword = await encrypt(password)
 
       const newUser = await createUser({
