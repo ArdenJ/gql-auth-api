@@ -8,6 +8,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -83,7 +84,13 @@ export type DeleteUserSuccess = {
   message?: Maybe<Scalars['String']>;
 };
 
-export type DeleteUserResult = DeleteUserSuccess | UserNotFoundErr;
+export type DeleteUserError = {
+   __typename?: 'DeleteUserError';
+  ErrorOnUserAuth?: Maybe<UnableToAutheticateReq>;
+  ErrorOnUserLookUp?: Maybe<UserNotFoundErr>;
+};
+
+export type DeleteUserResult = DeleteUserSuccess | DeleteUserError;
 
 export type Query = {
    __typename?: 'Query';
@@ -139,7 +146,8 @@ export type MutationUserLoginArgs = {
 
 
 export type MutationDeleteUserArgs = {
-  id: Scalars['String'];
+  username: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export enum CacheControlScope {
@@ -239,7 +247,8 @@ export type ResolversTypes = {
   SuccessOnUserLogin: ResolverTypeWrapper<SuccessOnUserLogin>,
   LoginUserResult: ResolversTypes['SuccessOnUserLogin'] | ResolversTypes['ErrorOnUserLogin'],
   DeleteUserSuccess: ResolverTypeWrapper<DeleteUserSuccess>,
-  DeleteUserResult: ResolversTypes['DeleteUserSuccess'] | ResolversTypes['UserNotFoundErr'],
+  DeleteUserError: ResolverTypeWrapper<DeleteUserError>,
+  DeleteUserResult: ResolversTypes['DeleteUserSuccess'] | ResolversTypes['DeleteUserError'],
   Query: ResolverTypeWrapper<{}>,
   Mutation: ResolverTypeWrapper<{}>,
   CacheControlScope: CacheControlScope,
@@ -266,7 +275,8 @@ export type ResolversParentTypes = {
   SuccessOnUserLogin: SuccessOnUserLogin,
   LoginUserResult: ResolversParentTypes['SuccessOnUserLogin'] | ResolversParentTypes['ErrorOnUserLogin'],
   DeleteUserSuccess: DeleteUserSuccess,
-  DeleteUserResult: ResolversParentTypes['DeleteUserSuccess'] | ResolversParentTypes['UserNotFoundErr'],
+  DeleteUserError: DeleteUserError,
+  DeleteUserResult: ResolversParentTypes['DeleteUserSuccess'] | ResolversParentTypes['DeleteUserError'],
   Query: {},
   Mutation: {},
   CacheControlScope: CacheControlScope,
@@ -355,8 +365,14 @@ export type DeleteUserSuccessResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
+export type DeleteUserErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteUserError'] = ResolversParentTypes['DeleteUserError']> = {
+  ErrorOnUserAuth?: Resolver<Maybe<ResolversTypes['UnableToAutheticateReq']>, ParentType, ContextType>,
+  ErrorOnUserLookUp?: Resolver<Maybe<ResolversTypes['UserNotFoundErr']>, ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
 export type DeleteUserResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteUserResult'] = ResolversParentTypes['DeleteUserResult']> = {
-  __resolveType: TypeResolveFn<'DeleteUserSuccess' | 'UserNotFoundErr', ParentType, ContextType>
+  __resolveType: TypeResolveFn<'DeleteUserSuccess' | 'DeleteUserError', ParentType, ContextType>
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -371,7 +387,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createNewUser?: Resolver<ResolversTypes['NewUserResult'], ParentType, ContextType, RequireFields<MutationCreateNewUserArgs, 'username' | 'password' | 'passwordConfirmation'>>,
   toggleUserLogIn?: Resolver<ResolversTypes['LoginUserResult'], ParentType, ContextType, RequireFields<MutationToggleUserLogInArgs, 'id' | 'isLoggedIn'>>,
   userLogin?: Resolver<ResolversTypes['LoginUserResult'], ParentType, ContextType, RequireFields<MutationUserLoginArgs, 'username' | 'password'>>,
-  deleteUser?: Resolver<ResolversTypes['DeleteUserResult'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>,
+  deleteUser?: Resolver<ResolversTypes['DeleteUserResult'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'username' | 'password'>>,
 };
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -395,6 +411,7 @@ export type Resolvers<ContextType = any> = {
   SuccessOnUserLogin?: SuccessOnUserLoginResolvers<ContextType>,
   LoginUserResult?: LoginUserResultResolvers,
   DeleteUserSuccess?: DeleteUserSuccessResolvers<ContextType>,
+  DeleteUserError?: DeleteUserErrorResolvers<ContextType>,
   DeleteUserResult?: DeleteUserResultResolvers,
   Query?: QueryResolvers<ContextType>,
   Mutation?: MutationResolvers<ContextType>,

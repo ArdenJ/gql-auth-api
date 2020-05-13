@@ -1,3 +1,4 @@
+import { CURRENT_USER } from './queries/queries';
 import { ApolloError } from 'apollo-server'
 
 import { createToken } from './auth/gen-token';
@@ -10,6 +11,7 @@ import {
   getUsersByAttr, 
   getUserById, 
   getUserByAttr, 
+  deleteUser,
   createUser, 
   toggleUserStatus 
 } from './prisma-functions';
@@ -48,7 +50,7 @@ export const resolvers = {
 
         const user = await getUserById(response?.id)
 
-        if (!user.id) return {
+        if (!user) return {
           __typename: 'ErrorOnUserAuth',
           UserNotFoundErr: {
             message: 'Unable to authenticate: user does not exist'
@@ -210,6 +212,51 @@ export const resolvers = {
       throw UNHANDLED_ACTION(err)
     }
   },
+
+  deleteUser: async (root, {username, password}, {req, authenticate}, info):Promise<DeleteUserResult> => {
+    try {
+      const response = await authenticate(req)
+
+      if (!response) return {
+        __typename: 'DeleteUserError',
+        ErrorOnUserAuth: {
+          message: 'Unable to authenticate request'
+        }
+      }
+
+      const user = await getUserByAttr({username})
+      console.log(user)
+
+      if (!user) return {
+        __typename: 'DeleteUserError',
+        ErrorOnUserLookUp: {
+          message: `Unable to find user ${username}`
+        }
+      }
+
+      const isValid = await validatePassword(password, user)
+
+      if (!isValid) {
+        return {
+          __typename: 'DeleteUserError',
+          ErrorOnUserAuth: {
+            message: 'Password incorrect'
+          }
+        }
+      } 
+
+    const request = await deleteUser(user)
+      console.log(request)
+      if (request) {
+        return {
+          __typename: 'DeleteUserSuccess',
+          message: request?.message
+        }
+      }
+    } catch (err) {
+      throw UNHANDLED_ACTION(err)
+    }
+  },
   
   userLogin: async (root, {username, password}, ctx, info):Promise<LoginUserResult> => {
     try {
@@ -320,14 +367,14 @@ export const resolvers = {
   // TODO: This is wrong
   DeleteUserResult: {
     __resolveType(obj) {
-      if(obj.token) {
-        return 'SuccessOnUserLogin'
+      if(obj.message) {
+        return 'DeleteUserSuccess'
       }
-      if(obj.UserLoginErr) {
-        return 'ErrorOnUserLogin'
+      if(obj.ErrorOnUserAuth) {
+        return 'DeleteUserError'
       }
-      if(obj.UserNotFoundErr) {
-        return 'ErrorOnUserLogin'
+      if(obj.ErrorOnUserLookUp) {
+        return 'DeleteUserError'
       }
     }
   },

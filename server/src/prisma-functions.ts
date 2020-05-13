@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, User } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -38,6 +38,20 @@ export const createUser = async (args) => {
   })
 
   return USER
+}
+
+// TODO: delete operation expects to return a User type and there 
+// doesn't seem to be a way to opt out.  
+export const deleteUser = async (arg) => {
+  const USER = await prisma.user.delete({
+    where: {
+      id: arg.id
+    }
+  }) as User | null
+
+  if (USER === null) return {
+    message: 'The user has been deleted'
+  }
 }
 
 export const toggleUserStatus = async (id, newStatus:boolean) => {

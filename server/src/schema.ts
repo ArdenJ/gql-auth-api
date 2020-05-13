@@ -1,4 +1,4 @@
-import { UserNotFoundErr, UserResult } from './generated/graphql';
+import { UserNotFoundErr, UserResult, ErrorOnUserAuth, UnableToAutheticateReq } from './generated/graphql';
 import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
@@ -41,8 +41,6 @@ export const typeDefs = gql`
   # This feels like a really long winded way of returning 
   # either a string or an array from a query but you can't 
   # define arrays directly on unions  
-  # TODO: It might not be worth defining success as a field
-  # as we infer status from the __typename on the response 
   type AllUsersSuccess {
     result: [User]!
   }
@@ -54,7 +52,6 @@ export const typeDefs = gql`
   union AllUsersResult = AllUsersSuccess | AllUsersFailure
 
   # MUTATION TYPE RESULTS
-  # TODO: Mutations should return a confirmation type that includes the user?
   union NewUserResult = User | UserAlreadyExistsErr 
 
   type ErrorOnUserLogin {
@@ -73,7 +70,12 @@ export const typeDefs = gql`
     message: String
   }
 
-  union DeleteUserResult = DeleteUserSuccess | UserNotFoundErr
+  type DeleteUserError {
+    ErrorOnUserAuth: UnableToAutheticateReq
+    ErrorOnUserLookUp: UserNotFoundErr
+  }
+
+  union DeleteUserResult = DeleteUserSuccess | DeleteUserError
 
   type Query {
     currentUser: UserAuth!
@@ -95,6 +97,6 @@ export const typeDefs = gql`
 
     userLogin(username: String! password: String!): LoginUserResult!
 
-    deleteUser(id: String!): DeleteUserResult!
+    deleteUser(username: String! password: String!): DeleteUserResult!
   }
 `
