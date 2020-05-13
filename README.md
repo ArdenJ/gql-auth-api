@@ -7,9 +7,11 @@ security concerns.
 
 The API is strongly typed using TypeScript and generated types from the GraphQL Schema. 
 The Schema itself is highly opinionated in an effort to limit the number of states that 
-can be return to the client. Passwords are hashed and encrypted (using crypto and 
-BCryptjs) and are not stored on the server. Requests to restricted queries are authenticated 
-against a user's token.
+can be returned to the client. Passwords are hashed and encrypted (using crypto and 
+BCryptjs) and are not in plaintext anywhere in the application. Requests to restricted 
+queries are authenticated against a user's token.
+
+[![**Demo video**](https://drive.google.com/file/d/1zOqEtA6WHoQzJJETmJy3nmZ7ob0oqy9u/preview) showing a basic user route of creating, authenticating login and deleting an account. 
 
 ## Quick Start API: 
 Note: this needs to be optimised!
@@ -33,9 +35,14 @@ run the following on the server:
   - Error messages returned to the client can potentially give away details about what is/isn't on the database
 - Add Role to user model/type
   - API queries should follow principal of least privilege
-- Protect sensitive routes by validating User/Role 
 - Remove hardcoded 'secrets'
+- Move config variables to their own folder
 - implement 'too many requests' 429 response server-side
+- abstract try catch on resolvers to wrapper function
+- Add check that the User is logged in in order to delete account 
+- deleting an account should result in a real response *not* an unhandled type error
+- Add more descriptive errors to CreateUser mutation: remove UserAlreadyExists placeholder
+- Add a simple client
 
 ## Using
 Note: Frankly, the below is overkill for the scope of this application. 
