@@ -11,7 +11,7 @@ can be returned to the client. Passwords are hashed and encrypted (using crypto 
 BCryptjs) and are not in plaintext anywhere in the application. Requests to restricted 
 queries are authenticated against a user's token.
 
-[![**Demo video**](https://drive.google.com/file/d/1zOqEtA6WHoQzJJETmJy3nmZ7ob0oqy9u/preview) showing a basic user route of creating, authenticating login and deleting an account. 
+[**Demo video**](https://drive.google.com/file/d/1zOqEtA6WHoQzJJETmJy3nmZ7ob0oqy9u/preview) showing a basic user route of creating, authenticating login and deleting an account. 
 
 ## Quick Start API: 
 Note: this needs to be optimised!
