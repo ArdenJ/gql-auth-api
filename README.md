@@ -30,6 +30,8 @@ run the following on the server:
   npm run dev
 ```
 
+A list of available queries and mutations is available [*here*](./server/src/queries/queries.ts)
+
 ## To Dos 
 - Sanitise message responses: 
   - Error messages returned to the client can potentially give away details about what is/isn't on the database
